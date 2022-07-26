@@ -26,7 +26,7 @@ export const ScriptView: NextPage = () => {
         .then((res) => res.json())
         .then((body) => {
           console.log(body[0]);
-          const vars: string[] | null = body[0].value.match(/\%(\w)*\%/gm);
+          const vars: string[] | null = body[0].value.match(/\%(.*?)\%/gm);
           const varObject: { [key in string]: string } = {};
           (vars || []).forEach((vari) => {
             varObject[vari] = "";
@@ -36,9 +36,7 @@ export const ScriptView: NextPage = () => {
         });
     }
   }, [id]);
-  // if (!id) {
-  //   router.back();
-  // }
+
   const parseValue = () => {
     let locValue = script?.value || "";
     console.log({ locValue }, "b");
@@ -64,6 +62,20 @@ export const ScriptView: NextPage = () => {
         >
           <button>{wasCopied ? "Copied" : "copy original script"}</button>
         </CopyToClipboard>
+        <button
+          onClick={() => {
+            const result = confirm("Are you sure you want to delete?");
+            if (result) {
+              fetch(`api/scripts?id=${id as unknown as string}`, {
+                method: "DELETE",
+              }).then(() => {
+                router.push("/");
+              });
+            }
+          }}
+        >
+          Delete
+        </button>
         <textarea readOnly value={parseValue()} placeholder="script" />
       </div>
       <div className={styles.varContent}>

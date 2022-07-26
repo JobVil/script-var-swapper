@@ -31,8 +31,8 @@ export const AddScript: NextPage = () => {
           placeholder="script"
           onChange={(e) => {
             const value = e.target.value;
-            const vars = value.match(/\%(\w)*\%/gm);
-            setVars(vars || []);
+            const vars = value.match(/\%(.*?)\%/gm) || [];
+            setVars([...new Set(vars)]);
             setValue(value);
           }}
         />
