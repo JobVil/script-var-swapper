@@ -24,3 +24,12 @@ a {
     background: black;
   }
 }
+
+.rah-hint-wrapper span {
+  color: white !important;
+  padding: 2px;
+}
+
+.rah-hint-wrapper input {
+  color: #ffffff8e !important;
+}

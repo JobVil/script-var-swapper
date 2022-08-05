@@ -1,15 +1,23 @@
 import type { NextPage } from "next";
 import styles from "../styles/Home.module.css";
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { Script } from "@prisma/client";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import {
+  MaskCIDRMap,
+  VariableDescription,
+  VariableDesKeys,
+  VariblesValues,
+} from "../utils/constants";
+import { getImpliedVariables, getInputHint } from "../utils/utils";
+import { Hint } from "react-autocomplete-hint";
 
 export const ScriptView: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const [script, setScript] = useState<Script>();
-  const [vars, setVars] = useState<{ [key in string]: string }>({});
+  const [vars, setVars] = useState<VariblesValues>({});
   const [wasCopied, setWasCopied] = useState(false);
   const isMounted = useRef(true);
   useEffect(() => {
@@ -25,11 +33,10 @@ export const ScriptView: NextPage = () => {
       })
         .then((res) => res.json())
         .then((body) => {
-          console.log(body[0]);
           const vars: string[] | null = body[0].value.match(/\%(.*?)\%/gm);
-          const varObject: { [key in string]: string } = {};
+          const varObject: VariblesValues = {};
           (vars || []).forEach((vari) => {
-            varObject[vari] = "";
+            varObject[vari as VariableDesKeys] = "";
           });
           setVars(varObject);
           setScript(body[0]);
@@ -39,13 +46,67 @@ export const ScriptView: NextPage = () => {
 
   const parseValue = () => {
     let locValue = script?.value || "";
-    console.log({ locValue }, "b");
+    if (vars["%INTERFACE0%"] && vars["%INTERFACE0%"].includes("GIGABIT")) {
+      locValue = locValue.replaceAll(
+        "ip nhrp group %HOS-VLAN%_%LOCATION%",
+        "nhrp group %HOS-VLAN%_%LOCATION%"
+      );
+    }
     Object.keys(vars).forEach((vari) => {
-      locValue = locValue.replaceAll(vari, vars[vari]);
+      locValue = locValue.replaceAll(
+        vari as VariableDesKeys,
+        vars[vari as VariableDesKeys]!
+      );
     });
-    console.log({ locValue }, "a");
+
     return locValue;
   };
+
+  const onChange =
+    (varKey: VariableDesKeys) => (e: ChangeEvent<HTMLInputElement>) => {
+      setVars((localVars) => {
+        const newLocalVars = {
+          ...localVars,
+          ...{ [varKey]: e.target.value.toUpperCase() },
+        };
+        const maybeOverrideVaribles = getImpliedVariables(newLocalVars, varKey);
+        if (maybeOverrideVaribles) {
+          return {
+            ...newLocalVars,
+            ...maybeOverrideVaribles,
+          };
+        }
+        return newLocalVars;
+      });
+    };
+
+  const onBlur =
+    (varKey: VariableDesKeys) => (e: ChangeEvent<HTMLInputElement>) => {
+      if (
+        varKey === "%INT-MASK%" &&
+        MaskCIDRMap[e.target.value as keyof typeof MaskCIDRMap]
+      ) {
+        setVars((localVars) => {
+          const newLocalVars = {
+            ...localVars,
+            ...{
+              [varKey]: MaskCIDRMap[e.target.value as keyof typeof MaskCIDRMap],
+            },
+          };
+          const maybeOverrideVaribles = getImpliedVariables(
+            newLocalVars,
+            varKey
+          );
+          if (maybeOverrideVaribles) {
+            return {
+              ...newLocalVars,
+              ...maybeOverrideVaribles,
+            };
+          }
+          return newLocalVars;
+        });
+      }
+    };
 
   return (
     <div className={styles.mainLayout}>
@@ -81,14 +142,21 @@ export const ScriptView: NextPage = () => {
       <div className={styles.varContent}>
         {Object.keys(vars).map((vari) => (
           <div key={vari} className={styles.variable}>
-            <span>{vari.replaceAll("%", "")}</span>
-            <input
-              value={vars[vari]}
-              placeholder={vari.replaceAll("%", "")}
-              onChange={(e) => {
-                setVars({ ...vars, ...{ [vari]: e.target.value } });
-              }}
-            />
+            <span title={VariableDescription[vari as VariableDesKeys]}>
+              {vari.replaceAll("%", "")}
+            </span>
+            <Hint
+              options={getInputHint(vari as VariableDesKeys)}
+              allowEnterFill
+              allowTabFill
+            >
+              <input
+                value={vars[vari as VariableDesKeys]}
+                placeholder={vari.replaceAll("%", "")}
+                onChange={onChange(vari as VariableDesKeys)}
+                onBlur={onBlur(vari as VariableDesKeys)}
+              />
+            </Hint>
           </div>
         ))}
       </div>

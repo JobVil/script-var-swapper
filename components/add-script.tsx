@@ -1,21 +1,15 @@
 import type { NextPage } from "next";
 import styles from "../styles/Home.module.css";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/router";
 
 export const AddScript: NextPage = () => {
+  const router = useRouter();
   const [isAdding, setIsAdding] = useState(false);
-  const [checkClicked, setCheckedClicked] = useState(false);
   const [error, setError] = useState(false);
   const [title, setTitle] = useState("");
   const [value, setValue] = useState("");
   const [vars, setVars] = useState<string[]>([]);
-  const isMounted = useRef(true);
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
   return (
     <div className={styles.mainLayout}>
       <div className={styles.scriptContent}>
@@ -48,8 +42,14 @@ export const AddScript: NextPage = () => {
               method: "POST",
               body: JSON.stringify({ title, value }),
             })
-              .then(() => setIsAdding(false))
-              .catch((e) => alert(e));
+              .then(() => {
+                setIsAdding(false);
+                router.push("/");
+              })
+              .catch((e) => {
+                setIsAdding(false);
+                alert(e);
+              });
           }}
         >
           {isAdding ? "adding" : "add"}
@@ -59,24 +59,6 @@ export const AddScript: NextPage = () => {
             Error!! !! !! !! !! !! y u no do it right?
           </span>
         )}
-        <button
-          onClick={() => {
-            fetch("api/scripts", {
-              method: "GET",
-            })
-              .then((res) => res.json())
-              .then((body) => {
-                console.log({ CheckResult: body });
-                setCheckedClicked(true);
-                setTimeout(() => {
-                  isMounted.current && setCheckedClicked(false);
-                }, 10000);
-              });
-          }}
-        >
-          check
-        </button>
-        {checkClicked && "Database printed to console"}
       </div>
       <div className={styles.varContent}>
         {vars.map((vari) => (

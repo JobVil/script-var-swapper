@@ -13,19 +13,6 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
     const { id } = req.query as Data;
     const prisma = new PrismaClient();
 
-    console.log(
-      "[user] Incoming request:",
-      JSON.stringify(
-        {
-          method: req.method,
-          query: req.query,
-          body: req.body,
-        },
-        null,
-        2
-      )
-    );
-
     switch (req.method) {
       case "GET":
         if (!id) {
