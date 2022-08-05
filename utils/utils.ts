@@ -23,27 +23,53 @@ export const getImpliedVariables = (
 
   switch (key) {
     case "%INT-MASK%": {
+      let result: VariblesValues = {};
       if (variables["%INT-ADDR%"]) {
         const internalNetwork = getInternalNetwork(
           variables[key]!,
           variables["%INT-ADDR%"]
         );
-        const wildMask = getInternalWildMask(variables[key]!);
-        if (internalNetwork?.["%INT-NET%"] && wildMask?.["%INT-WILD%"]) {
-          const result = {
-            ...internalNetwork,
-            ...wildMask,
-          };
-          return result;
+        if (internalNetwork?.["%INT-NET%"]) {
+          result = { ...result, ...internalNetwork };
         }
+
+        const wildMask = getInternalWildMask(variables[key]!);
+        if (variables["%INT-WILD%"] !== undefined && wildMask?.["%INT-WILD%"]) {
+          result = { ...result, ...wildMask };
+        }
+
+        return result;
       }
       const wildMask = getInternalWildMask(variables[key]!);
-      if (wildMask) {
+      if (wildMask && variables["%INT-WILD%"] !== undefined) {
         return wildMask;
       }
     }
     case "%HOS-VLAN%": {
-      return getImpliedVariablesFromVlan(variables[key]!);
+      const impliedVariables = getImpliedVariablesFromVlan(variables[key]!);
+      if (!impliedVariables) {
+        return null;
+      }
+      let result: VariblesValues = {};
+      if (
+        variables["%LOC-IDEN%"] !== undefined &&
+        impliedVariables["%LOOP-IDEN%"]
+      ) {
+        result["%LOOP-IDEN%"] = impliedVariables["%LOOP-IDEN%"];
+      }
+      if (
+        variables["%LOOP2-IDEN%"] !== undefined &&
+        impliedVariables["%LOOP2-IDEN%"]
+      ) {
+        result["%LOOP2-IDEN%"] = impliedVariables["%LOOP2-IDEN%"];
+      }
+      if (
+        variables["%HOS-IDEN%"] !== undefined &&
+        impliedVariables["%HOS-IDEN%"]
+      ) {
+        result["%HOS-IDEN%"] = impliedVariables["%HOS-IDEN%"];
+      }
+      return result;
     }
     case "%INT-ADDR%": {
       if (variables["%INT-MASK%"]) {
@@ -126,10 +152,19 @@ export const getInternalNetwork = (
 export const getInputHint = (key: VariableDesKeys) => {
   switch (key) {
     case "%INTERFACE0%":
-      return ["FASTETHERNET/0", "GIGABITETHERNET0/0/0"];
+      return ["FastEthernet0/0", "GigabitEthernet0/0/0"];
     case "%INTERFACE1%":
-      return ["FASTETHERNET/1", "GIGABITETHERNET0/0/1"];
+      return ["FastEthernet0/1", "GigabitEthernet0/0/1"];
     default:
       return [];
+  }
+};
+
+export const getInputDefaultValue = (key: VariableDesKeys) => {
+  switch (key) {
+    case "%INTERFACE0%":
+      return "BankOnIT-";
+    default:
+      return "";
   }
 };

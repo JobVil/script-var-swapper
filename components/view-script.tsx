@@ -10,7 +10,11 @@ import {
   VariableDesKeys,
   VariblesValues,
 } from "../utils/constants";
-import { getImpliedVariables, getInputHint } from "../utils/utils";
+import {
+  getImpliedVariables,
+  getInputDefaultValue,
+  getInputHint,
+} from "../utils/utils";
 import { Hint } from "react-autocomplete-hint";
 
 export const ScriptView: NextPage = () => {
@@ -38,7 +42,15 @@ export const ScriptView: NextPage = () => {
           (vars || []).forEach((vari) => {
             varObject[vari as VariableDesKeys] = "";
           });
-          setVars(varObject);
+          setVars((localVars) => {
+            const varObject: VariblesValues = {};
+            (vars || []).forEach((vari) => {
+              varObject[vari as VariableDesKeys] =
+                localVars[vari as VariableDesKeys] ||
+                getInputDefaultValue(vari as VariableDesKeys);
+            });
+            return varObject;
+          });
           setScript(body[0]);
         });
     }
@@ -46,7 +58,10 @@ export const ScriptView: NextPage = () => {
 
   const parseValue = () => {
     let locValue = script?.value || "";
-    if (vars["%INTERFACE0%"] && vars["%INTERFACE0%"].includes("GIGABIT")) {
+    if (
+      vars["%INTERFACE0%"] &&
+      vars["%INTERFACE0%"].toUpperCase().includes("GIGABIT")
+    ) {
       locValue = locValue.replaceAll(
         "ip nhrp group %HOS-VLAN%_%LOCATION%",
         "nhrp group %HOS-VLAN%_%LOCATION%"
@@ -67,7 +82,12 @@ export const ScriptView: NextPage = () => {
       setVars((localVars) => {
         const newLocalVars = {
           ...localVars,
-          ...{ [varKey]: e.target.value.toUpperCase() },
+          ...{
+            [varKey]:
+              varKey === "%CLIENTID%" || varKey === "%LOCATION%"
+                ? e.target.value.toUpperCase()
+                : e.target.value,
+          },
         };
         const maybeOverrideVaribles = getImpliedVariables(newLocalVars, varKey);
         if (maybeOverrideVaribles) {

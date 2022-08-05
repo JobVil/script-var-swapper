@@ -182,11 +182,3 @@
     filter: invert(1);
   }
 }
-
-.rah-hint-wrapper span {
-  color: white;
-}
-
-.rah-hint-wrapper input {
-  color: #ffffff8e;
-}
