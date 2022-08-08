@@ -162,7 +162,7 @@ export const getInputHint = (key: VariableDesKeys) => {
 
 export const getInputDefaultValue = (key: VariableDesKeys) => {
   switch (key) {
-    case "%INTERFACE0%":
+    case "%QOS-PLCY%":
       return "BankOnIT-";
     default:
       return "";
