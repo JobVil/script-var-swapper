@@ -155,6 +155,10 @@ export const getInputHint = (key: VariableDesKeys) => {
       return ["FastEthernet0/0", "GigabitEthernet0/0/0"];
     case "%INTERFACE1%":
       return ["FastEthernet0/1", "GigabitEthernet0/0/1"];
+    case "%WAN-INT%":
+      return ["FastEthernet0/1", "GigabitEthernet0/0/1"];
+    case "%BMNVPN-INT%":
+      return ["FastEthernet0/0/0", "GigabitEthernet0/0/2"];
     default:
       return [];
   }

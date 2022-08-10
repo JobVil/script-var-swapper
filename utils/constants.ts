@@ -29,6 +29,10 @@ export const VariableDescription = {
     "The address allocated to the firewall on the 10.86.204-7.0 - BMN-VPN tab in the SBC spreadsheet.",
   "%BMN-BACK-AS%":
     "The bgp autonomous system allocated to this client on the AS-NUMBERS tab in the SBC spreadsheet.",
+  "%WAN-INT%":
+    "The interface for the circuit information.\n\nEX: FastEthernet0/1, GigabitEthernet0/0/1",
+  "%BMNVPN-INT%":
+    "The interface for the BMN-VPN that connects to the Firewall\n\nEX:FastEthernet0/0/0, GigabitEthernet0/0/2"
 };
 
 export type VariableDesKeys = keyof typeof VariableDescription;
