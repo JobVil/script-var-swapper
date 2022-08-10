@@ -16,7 +16,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
     switch (req.method) {
       case "GET":
         if (!id) {
-          return res.json(await prisma.script.findMany());
+          return res.json((await prisma.script.findMany()).sort((a,b) => {return a.title > b.title ? 1 : -1}));
         }
         return res.json(await prisma.script.findMany({ where: { id } }));
       case "POST":
