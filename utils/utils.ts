@@ -47,29 +47,7 @@ export const getImpliedVariables = (
     }
     case "%HOS-VLAN%": {
       const impliedVariables = getImpliedVariablesFromVlan(variables[key]!);
-      if (!impliedVariables) {
-        return null;
-      }
-      let result: VariblesValues = {};
-      if (
-        variables["%LOC-IDEN%"] !== undefined &&
-        impliedVariables["%LOOP-IDEN%"]
-      ) {
-        result["%LOOP-IDEN%"] = impliedVariables["%LOOP-IDEN%"];
-      }
-      if (
-        variables["%LOOP2-IDEN%"] !== undefined &&
-        impliedVariables["%LOOP2-IDEN%"]
-      ) {
-        result["%LOOP2-IDEN%"] = impliedVariables["%LOOP2-IDEN%"];
-      }
-      if (
-        variables["%HOS-IDEN%"] !== undefined &&
-        impliedVariables["%HOS-IDEN%"]
-      ) {
-        result["%HOS-IDEN%"] = impliedVariables["%HOS-IDEN%"];
-      }
-      return result;
+      return getFiilteredImpliedVariables(variables, impliedVariables);
     }
     case "%INT-ADDR%": {
       if (variables["%INT-MASK%"]) {
@@ -82,10 +60,45 @@ export const getImpliedVariables = (
         }
       }
     }
+    case "%LOOP2-IDEN%":
+    case "%HOS-IDEN%":
+    case "%LOOP-IDEN%": {
+      if (variables[key] && variables[key]!.length > 3) {
+        const impliedVariables = getImpliedVariablesFromVlan(variables[key]!);
+        return getFiilteredImpliedVariables(variables, impliedVariables);
+      }
+      return null;
+    }
     default: {
       return null;
     }
   }
+};
+
+const getFiilteredImpliedVariables = (
+  variables: VariblesValues,
+  impliedVariables: ReturnType<typeof getImpliedVariablesFromVlan>
+) => {
+  if (!impliedVariables) {
+    return null;
+  }
+  let result: VariblesValues = {};
+  if (
+    variables["%LOOP-IDEN%"] !== undefined &&
+    impliedVariables["%LOOP-IDEN%"]
+  ) {
+    result["%LOOP-IDEN%"] = impliedVariables["%LOOP-IDEN%"];
+  }
+  if (
+    variables["%LOOP2-IDEN%"] !== undefined &&
+    impliedVariables["%LOOP2-IDEN%"]
+  ) {
+    result["%LOOP2-IDEN%"] = impliedVariables["%LOOP2-IDEN%"];
+  }
+  if (variables["%HOS-IDEN%"] !== undefined && impliedVariables["%HOS-IDEN%"]) {
+    result["%HOS-IDEN%"] = impliedVariables["%HOS-IDEN%"];
+  }
+  return result;
 };
 
 export const getInternalWildMask = (

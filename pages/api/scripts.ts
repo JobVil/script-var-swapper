@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma, Script } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
+import prisma from "../../lib/prisma";
 
 type Data = {
   id: string;
@@ -11,7 +12,6 @@ type Data = {
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   try {
     const { id } = req.query as Data;
-    const prisma = new PrismaClient();
 
     switch (req.method) {
       case "GET":
