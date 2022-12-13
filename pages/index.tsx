@@ -47,7 +47,7 @@ const Home: NextPage = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by s<span className={styles.logo}>Your Baby</span>
+          Powered by <span className={styles.logo}>Your Baby</span>
         </a>
       </footer>
     </div>
