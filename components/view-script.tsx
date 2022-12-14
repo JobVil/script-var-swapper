@@ -85,8 +85,8 @@ export const ScriptView: NextPage = () => {
           ...{
             [varKey]:
               varKey === "%CLIENTID%" || varKey === "%LOCATION%"
-                ? e.target.value.toUpperCase()
-                : e.target.value,
+                ? e.target.value.trim().toUpperCase()
+                : e.target.value.trim(),
           },
         };
         const maybeOverrideVaribles = getImpliedVariables(newLocalVars, varKey);
@@ -102,15 +102,13 @@ export const ScriptView: NextPage = () => {
 
   const onBlur =
     (varKey: VariableDesKeys) => (e: ChangeEvent<HTMLInputElement>) => {
-      if (
-        varKey === "%INT-MASK%" &&
-        MaskCIDRMap[e.target.value as keyof typeof MaskCIDRMap]
-      ) {
+      const maskCIDRMapKey = e.target.value.trim() as keyof typeof MaskCIDRMap;
+      if (varKey === "%INT-MASK%" && MaskCIDRMap[maskCIDRMapKey]) {
         setVars((localVars) => {
           const newLocalVars = {
             ...localVars,
             ...{
-              [varKey]: MaskCIDRMap[e.target.value as keyof typeof MaskCIDRMap],
+              [varKey]: MaskCIDRMap[maskCIDRMapKey],
             },
           };
           const maybeOverrideVaribles = getImpliedVariables(
